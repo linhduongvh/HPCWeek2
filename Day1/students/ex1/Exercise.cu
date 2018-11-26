@@ -2,7 +2,7 @@
 #include "include/chronoGPU.hpp"
 #include "thrust/host_vector.h"
 #include "thrust/device_vector.h"
-
+#include "thrust/transform.h"
 
 void Exercise::Question1(const thrust::host_vector<int>& A,
 												const thrust::host_vector<int>& B, 
@@ -46,17 +46,22 @@ void Exercise::Question1(const thrust::host_vector<int>& A,
 void Exercise::Question2(thrust::host_vector<int>&A) const 
 {
   // TODO: addition using ad hoc iterators
+	chrUP.start();
 	thrust::counting_iterator<int>X(1);
 	thrust::constant_iterator<int>Y(4);
 	thrust::device_vector<int> gpuA(A.size());
-
+	chrUP.stop();
+	chrGPU.start();
 	thrust::transform(
 		X, X + A.size(),
 	 	Y, gpuA.begin(),
 	 	thrust::placeholders::_1+ thrust::placeholders::_2
-	 );
+	);
+	chrGPU.stop();
+	chrDOWN.start();
 	A = gpuA;
-	std::cout << "Question2 done in " << gpuA.elapsedTime() << std::endl;
+	chrDOWN.stop();
+	std::cout << "Question2 done in " << gpuA.elapsedTime() << std::endl;ø
 }
 
 
