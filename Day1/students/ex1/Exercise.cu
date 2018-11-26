@@ -1,5 +1,5 @@
 #include "Exercise.hpp"
-#include "chronoGPU.hpp"
+#include "include/chronoGPU.hpp"
 
 // class AdditionFunction : public thrust::binary_function
 
