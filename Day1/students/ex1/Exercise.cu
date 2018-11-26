@@ -1,5 +1,7 @@
 #include "Exercise.hpp"
-#include "chronoGPU.hpp"
+#include "include/chronoGPU.hpp"
+#include "thrust/host_vector.h"
+#include "thrust/device_vector.h"
 
 // class AdditionFunction : public thrust::binary_function
 
@@ -8,7 +10,7 @@ void Exercise::Question1(const thrust::host_vector<int>& A,
 												thrust::host_vector<int>&C) const
 {
 // TODO: addition of two vectors using thrust
-	ChronoGPU chrUP, chrDOWN chrGPU;
+	ChronoGPU chrUP, chrDOWN, chrGPU;
 
 	// thrust::device_vector<int> d_A(A);
 	// thrust::device_vector<int> d_C(A.size());
