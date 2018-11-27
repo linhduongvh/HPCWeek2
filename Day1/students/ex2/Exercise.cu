@@ -3,11 +3,36 @@
 #include "Exercise.hpp"
 #include "include/ChronoGPU.hpp"
 
+struct evenOddGather : public thrust::unary_function<const int, int>{
+	const int N;
+	evenOddGather(int size): N(size){}
+	__device__ int operator()(const int &i){
+		if (i*2)<N{
+			return (i*2);
+		}else{
+			return (1 +i*2 -n);
+		}
+		
+	}
+};
+
 void Exercise::Question1(const thrust::host_vector<int>& A,
 						 thrust::host_vector<int>& OE ) const
 {
   // TODO: extract values at even and odd indices from A and put them into OE.
   // TODO: using GATHER
+	thrust::device_vector<int> gpuA = A;
+	thrust::device_vector<int gpuOE(OE.size());
+
+	thrust::counting_iterator<int>X(0);
+	thrust::gather(thrust::device, 
+		thrust::make_transform_iterator(X, evenOddGather(gpuA.size())),
+		thrust::make_transform_iterator(X + gpuA.size(), evenOddGather(gpuA.size())),
+		gpuA.begin(),
+		gpuOE.begin()
+	);
+
+	OE = gpuOE;
 }
 
 
