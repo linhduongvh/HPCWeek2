@@ -90,8 +90,7 @@ void Exercise::Question3(const thrust::host_vector<int>& A,
 			thrust::make_zip_iterator(thrust::make_tuple(gpuA.end(), gpuB.end(), gpuC.end())), 
 			gpuD.begin(), 
 			thrust::placeholders::_1+ thrust::placeholders::_2+ thrust::placeholders::_3
-			D=gpuD(D);
-
 		);
+		D=gpuD(D);
 	}
 }
