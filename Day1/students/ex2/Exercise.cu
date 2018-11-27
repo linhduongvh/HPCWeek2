@@ -4,10 +4,10 @@
 #include "Exercise.hpp"
 #include "include/chronoGPU.hpp"
 
-struct evenOddGather : public thrust::unary_function<const int, int>{
+struct evenOddGather: public thrust::unary_function<const int, int>{
 	const int N;
 	evenOddGather(int size): N(size){}
-	__device__ int operator()(const int &i){
+	__device__ int operator()(const int &i ){ //i = index
 		if ((i*2)<N){
 			return (i*2);
 		}else{
@@ -49,13 +49,49 @@ void Exercise::Question1(const thrust::host_vector<int>& A,
 	std::cout <<" - GPU time : "<< chrGPU.elapsedTime() << std::endl;
 	std::cout <<" - DOWN time : " << chrDOWN.elapsedTime() << std::endl;
 }
+ struct evenOddScatter : public thrust::unary_function<const int,int>{
+ 	const int N;
+ 	evenOddScatter(int size): N(size){}
+ 	__device__ int operator()(const int &i){
+ 		if (i%2 == 0){
+ 			return i/2;
+ 		}else{
+ 			return (N+i)/2;
+ 		}
 
-
+ 	}
+ };
 
 void Exercise::Question2(const thrust::host_vector<int>&A, 
 						thrust::host_vector<int>&OE) const 
 {
   // TODO: idem q1 using SCATTER
+	ChronoGPU chrUP, chrDOWN, chrGPU;
+	for (int i=3; i--; ){
+		chrUP.start();
+  		thrust::device_vector<int> gpuA(A);
+  		thrust::device_vector<int> gpuOE(OE.size());
+		thrust::counting_iterator<int>X(0);
+		chrUP.stop();
+
+		chrGPU.start();
+		thrust::scatter(//thrust::device, 
+			gpuA.begin(), gpuA.end(),
+			thrust::make_transform_iterator(X, evenOddScatter(gpuA.size())),
+			//thrust::make_transform_iterator(X + gpuA.size(), evenOddFunction(gpuA.size())),
+			gpuOE.begin()
+		);
+		chrGPU.stop();
+
+		chrDOWN.start();
+		OE = gpuOE;
+		chrDOWN.stop();
+	}
+	float elapsed = chrUP.elapsedTime() + chrDOWN.elapsedTime() + chrGPU.elapsedTime();
+	std::cout << "Question2 done in " << elapsed << std::endl;
+	std::cout <<" - UP time : " << chrUP.elapsedTime() << std::endl;
+	std::cout <<" - GPU time : "<< chrGPU.elapsedTime() << std::endl;
+	std::cout <<" - DOWN time : " << chrDOWN.elapsedTime() << std::endl;
 }
 
 
@@ -66,6 +102,32 @@ void Exercise::Question3(const thrust::host_vector<T>& A,
 						thrust::host_vector<T>&OE) const 
 {
   // TODO: idem for big objects
+	ChronoGPU chrUP, chrDOWN, chrGPU;
+	for (int i=3; i--; ){
+		chrUP.start();
+  		thrust::device_vector<T> gpuA(A);
+  		thrust::device_vector<T> gpuOE(OE.size());
+		thrust::counting_iterator<int>X(0);
+		chrUP.stop();
+
+		chrGPU.start();
+		thrust::scatter(//thrust::device, 
+			gpuA.begin(), gpuA.end(),
+			thrust::make_transform_iterator(X, evenOddScatter(gpuA.size())),
+			//thrust::make_transform_iterator(X + gpuA.size(), evenOddFunction(gpuA.size())),
+			gpuOE.begin()
+		);
+		chrGPU.stop();
+
+		chrDOWN.start();
+		OE = gpuOE;
+		chrDOWN.stop();
+	}
+	float elapsed = chrUP.elapsedTime() + chrDOWN.elapsedTime() + chrGPU.elapsedTime();
+	std::cout << "Question3 done in " << elapsed << std::endl;
+	std::cout <<" - UP time : " << chrUP.elapsedTime() << std::endl;
+	std::cout <<" - GPU time : "<< chrGPU.elapsedTime() << std::endl;
+	std::cout <<" - DOWN time : " << chrDOWN.elapsedTime() << std::endl;
 }
 
 
@@ -77,6 +139,7 @@ struct MyDataType {
 	operator int() const { return m_i; }
 
 	// TODO: add what you want ...
+	int x[10];
 };
 
 // Warning: do not modify the following function ...
