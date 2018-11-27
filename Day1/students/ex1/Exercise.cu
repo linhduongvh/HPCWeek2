@@ -100,6 +100,6 @@ void Exercise::Question3(const thrust::host_vector<int>& A,
 			additionFunctor3()
 			// thrust::placeholders::_1+ thrust::placeholders::_2+ thrust::placeholders::_3
 		);
-		D=gpuD(D);
+		D=gpuD;
 	}
 }
