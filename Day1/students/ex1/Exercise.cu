@@ -73,6 +73,14 @@ void Exercise::Question2(thrust::host_vector<int>&A) const
 
 
 
+typedef thrust::tuple<int, int, int> myInt3;
+class additionFunctor3: public thrust::unary_function<myInt3, int>{
+	public:
+		__device__ int operator()(const myInt3 &tuple){
+			return thrust::get<0>(tuple) + thrust::get<1>(tuple) + thrust::get<2>(tuple);
+		}
+};
+
 void Exercise::Question3(const thrust::host_vector<int>& A,
 												const thrust::host_vector<int>& B, 
 												const thrust::host_vector<int>& C, 
@@ -89,7 +97,8 @@ void Exercise::Question3(const thrust::host_vector<int>& A,
 			thrust::make_zip_iterator(thrust::make_tuple(gpuA.begin(), gpuB.begin(), gpuC.begin())),
 			thrust::make_zip_iterator(thrust::make_tuple(gpuA.end(), gpuB.end(), gpuC.end())), 
 			gpuD.begin(), 
-			thrust::placeholders::_1+ thrust::placeholders::_2+ thrust::placeholders::_3
+			additionFunctor3()
+			// thrust::placeholders::_1+ thrust::placeholders::_2+ thrust::placeholders::_3
 		);
 		D=gpuD(D);
 	}
