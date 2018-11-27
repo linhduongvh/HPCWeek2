@@ -1,5 +1,6 @@
 #include <thrust/scatter.h>
 #include <thrust/gather.h>
+#include <thrust/device_vector.h>
 #include "Exercise.hpp"
 #include "include/chronoGPU.hpp"
 
@@ -10,7 +11,7 @@ struct evenOddGather : public thrust::unary_function<const int, int>{
 		if ((i*2)<N){
 			return (i*2);
 		}else{
-			return (1 +i*2 -n);
+			return (1 +i*2 - N);
 		}
 		
 	}
@@ -21,18 +22,32 @@ void Exercise::Question1(const thrust::host_vector<int>& A,
 {
   // TODO: extract values at even and odd indices from A and put them into OE.
   // TODO: using GATHER
-	thrust::device_vector<int> gpuA(A);
-	thrust::device_vector<int gpuOE(OE.size());
+	ChronoGPU chrUP, chrDOWN, chrGPU;
+	for (int i=3; i--; ){
+		chrUP.start();
+  		thrust::device_vector<int> gpuA(A);
+  		thrust::device_vector<int> gpuOE(OE.size());
+		thrust::counting_iterator<int>X(0);
+		chrUP.stop();
 
-	thrust::counting_iterator<int>X(0);
-	thrust::gather(thrust::device, 
-		thrust::make_transform_iterator(X, evenOddGather(gpuA.size())),
-		thrust::make_transform_iterator(X + gpuA.size(), evenOddGather(gpuA.size())),
-		gpuA.begin(),
-		gpuOE.begin()
-	);
+		chrGPU.start();
+		thrust::gather(//thrust::device, 
+			thrust::make_transform_iterator(X, evenOddGather(gpuA.size())),
+			thrust::make_transform_iterator(X + gpuA.size(), evenOddGather(gpuA.size())),
+			gpuA.begin(),
+			gpuOE.begin()
+		);
+		chrGPU.stop();
 
-	OE = gpuOE;
+		chrDOWN.start();
+		OE = gpuOE;
+		chrDOWN.stop();
+	}
+	float elapsed = chrUP.elapsedTime() + chrDOWN.elapsedTime() + chrGPU.elapsedTime();
+	std::cout << "Question1 done in " << elapsed << std::endl;
+	std::cout <<" - UP time : " << chrUP.elapsedTime() << std::endl;
+	std::cout <<" - GPU time : "<< chrGPU.elapsedTime() << std::endl;
+	std::cout <<" - DOWN time : " << chrDOWN.elapsedTime() << std::endl;
 }
 
 
