@@ -10,6 +10,6 @@
 
 int main( int argc, char **argv ) {
 	App *app = App::createInstance();
-	app->launch( argc, argv, false );
+	app->launch( argc, argv );
 	return ( EXIT_SUCCESS );
 }
