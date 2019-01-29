@@ -9,6 +9,7 @@
 #include <thrust/iterator/transform_iterator.h>
 #include <thrust/device_vector.h>
 #include <thrust/scan.h>
+#include "chronoGPU.hpp"
 
 /* Exercice 1.
 * Here, you have to apply the Median Filter on the input image.
@@ -101,6 +102,7 @@ public:
     int shift = size / 2;
 
     float3 *neighboursArray = new float3[size * size];
+    // float3 neighboursArray[25] = {0};
 
     int count = 0;
     for (int i = x - shift; i <= x + shift; ++i)
