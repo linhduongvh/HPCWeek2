@@ -14,7 +14,7 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
-#include <helper_gl.h>
+//#include <helper_gl.h>
 #if defined (__APPLE__) || defined(MACOSX)
   #pragma clang diagnostic ignored "-Wdeprecated-declarations"
   #include <GLUT/glut.h>
