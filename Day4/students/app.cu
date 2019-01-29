@@ -12,7 +12,7 @@
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 
-#include "include/helper_cuda.h"
+#include "helper_cuda.h"
 #include "helper_gl.h"
 #include <iostream>
 #include <iomanip>     
@@ -37,14 +37,15 @@ App *App::createInstance() {
 	return m_instance;
 }
 
-void App::initData( int argc, char **argv ) {
+void App::initData( int argc, char **argv, bool useGL ) {
 	App *app = getInstance();
 
 	std::cout << "Initializing data..." << std::endl;
 	
 	app->m_appName	= "Histogram equalization";
 	app->m_imgFile	= "Undefined";
-	
+	app->useGL      = useGL;
+
 	// get source image
 	if ( argc == 1 ) {
 		std::cerr << "Please give a file..." << std::endl;
@@ -91,6 +92,8 @@ void App::initData( int argc, char **argv ) {
 
 void App::initGL() {
 	App *app = getInstance();
+	if( !app->useGL )
+	  return;
 	std::cout << "Initializing GLUT..." << std::endl;
 
 	int argc = 1;
@@ -112,9 +115,10 @@ void App::initGL() {
 
     std::cout << "-> Done." << std::endl;
 
+#ifdef WIN32
 	std::cout << "Initializing glew..." << std::endl;
 
-	/*if ( glewInit() != GLEW_OK ) {
+	if ( glewInit() != GLEW_OK ) {
 		std::cerr << "Error: " << glewGetErrorString( glewInit() );
 		app->cleanAndExit();
 	}
@@ -127,7 +131,8 @@ void App::initGL() {
 			<< "  - GL_ARB_vertex_buffer_object"	<< std::endl
 			<< "  - GL_ARB_pixel_buffer_object"		<< std::endl << std::endl;
         app->cleanAndExit();
-    }*/
+	}
+#endif
 
 	glGenBuffers( 1, &app->m_pboGL);
     glBindBuffer( GL_PIXEL_UNPACK_BUFFER_ARB, app->m_pboGL);
@@ -185,6 +190,9 @@ void App::initDataGPU() {
 	const unsigned int nbPixels =  app->m_width * app->m_height;
 	HANDLE_ERROR( cudaMalloc( (void**)&app->m_devImgSrc, nbPixels * sizeof(uchar4) ) );
 	HANDLE_ERROR( cudaMemcpy( app->m_devImgSrc, app->m_hostImgSource, nbPixels * sizeof(uchar4), cudaMemcpyHostToDevice) );
+	if( !app->useGL ) {
+		HANDLE_ERROR( cudaMalloc( &app->m_devImgOut, nbPixels * sizeof(uchar4) ) );
+	}
 	
 	// HSV
 	HANDLE_ERROR( cudaMalloc( (void**)&app->m_devH, nbPixels * sizeof(float) ) );
@@ -218,12 +226,12 @@ void App::loadImgSrc( const std::string &imgName ) {
 	}
 }
 
-void App::launch( int &argc, char **argv ) {
+void App::launch( int &argc, char **argv, bool useGL ) {
 	App *app = getInstance();
 	std::cout	<< "==============================================="	<< std::endl
 				<< "            Initializing application           "	<< std::endl
 				<< "==============================================="	<< std::endl << std::endl;
-	app->initData( argc, argv );
+	app->initData( argc, argv, useGL );
 	app->initGPU();
 	app->initGL();
 	app->initDataGPU();
@@ -234,8 +242,14 @@ void App::launch( int &argc, char **argv ) {
 	
 	std::cout << "Image has " << app->m_width << " x " << app->m_height << std::endl << std::endl;
 		
-	glutMainLoop();
-
+	if( useGL ) {
+		glutMainLoop();
+	}
+	else {
+		app->m_equalized = true,
+		idle();
+		app->saveToPPM();
+	}
 	cudaDeviceReset();
 }
 
@@ -244,12 +258,15 @@ void App::idle() {
 	
 	float time = 0.f;
 
-	if ( !app->m_rcCUDA )
-		return;
-    	
-	HANDLE_ERROR( cudaGraphicsMapResources( 1, &app->m_rcCUDA, NULL ) );
-	size_t size;
-	HANDLE_ERROR( cudaGraphicsResourceGetMappedPointer( (void **)&app->m_devImgOut, &size, app->m_rcCUDA ) );
+	if( app->useGL )
+	{
+		if ( !app->m_rcCUDA )
+			return;	
+		HANDLE_ERROR( cudaGraphicsMapResources( 1, &app->m_rcCUDA, NULL ) );
+		size_t size;
+		HANDLE_ERROR( cudaGraphicsResourceGetMappedPointer( (void **)&app->m_devImgOut, &size, app->m_rcCUDA ) );
+	}
+
 	if ( app->m_equalized ) {
 		if ( app->m_haveToWork ) {
 			std::cout << "==============================" << std::endl;
@@ -303,7 +320,7 @@ void App::idle() {
 			chr.start();
 			// HSV to RGB
 			hsv2rgb<<<app->m_dimGrid, app->m_dimBlock>>>( app->m_devH, app->m_devS, app->m_devV, 
-															app->m_width, app->m_height, app->m_devImgOut ); 
+														app->m_width, app->m_height, app->m_devImgOut ); 
 
 			chr.stop();
 			time = chr.elapsedTime();
@@ -331,13 +348,18 @@ void App::idle() {
 								cudaMemcpyHostToDevice ) ); // Display source
 	}
 			
-	HANDLE_ERROR( cudaGraphicsUnmapResources( 1, &app->m_rcCUDA, NULL ) );
-	glutPostRedisplay();
+	if( app->useGL )
+	{
+		HANDLE_ERROR( cudaGraphicsUnmapResources( 1, &app->m_rcCUDA, NULL ) );
+		glutPostRedisplay();
+	}
 }
 
 void App::display() {
 	App *app = getInstance();
-	
+	if ( !app->useGL )
+		return ;
+
 	glClearColor( 0.f, 0.f, 0.f, 1.f );
     glClear( GL_COLOR_BUFFER_BIT );
 	

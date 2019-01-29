@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/linhdown/HPCWeek2/Day2/Student/utils/chronoCPU.cpp
+chronoCPU.hpp
+/home/linhdown/HPCWeek2/Day2/Student/utils/chronoCPU.hpp
+iostream
+-
+
+/home/linhdown/HPCWeek2/Day2/Student/utils/chronoCPU.hpp
+windows.h
+-
+sys/time.h
+-
+

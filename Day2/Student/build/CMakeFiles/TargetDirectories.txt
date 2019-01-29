@@ -1,0 +1,3 @@
+/home/linhdown/HPCWeek2/Day2/Student/build/CMakeFiles/rebuild_cache.dir
+/home/linhdown/HPCWeek2/Day2/Student/build/CMakeFiles/edit_cache.dir
+/home/linhdown/HPCWeek2/Day2/Student/build/CMakeFiles/Exercise1.dir

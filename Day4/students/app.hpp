@@ -10,8 +10,22 @@
 #define __APP_HPP
 
 // GL includes
+// OpenGL Graphics includes
+#ifdef WIN32
+#include <windows.h>
+#endif
+//#include <helper_gl.h>
+#if defined (__APPLE__) || defined(MACOSX)
+  #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+  #include <GLUT/glut.h>
+  #ifndef glutCloseFunc
+  #define glutCloseFunc glutWMCloseFunc
+  #endif
+#else
+#include <GL/freeglut.h>
+#endif
 //#include "GL/glew.h"
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+/*#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 	#include "GL/wglew.h"
 	#if defined(WIN64) || defined(_WIN64)
 		#pragma comment(lib, "glew64.lib")
@@ -31,7 +45,7 @@
 	#include "GL/gl.h"
 	#include "GL/glu.h"
 #endif
-
+*/
 #include <string>
 #include "utils/common.hpp"
 
@@ -40,14 +54,14 @@
 
 class App { // Singleton
 private:
-	App() {}; // undefined
+	App() {}; // private
 public:
 	~App() { cleanAndExit(); delete m_instance; }
 
 	static App *createInstance();
 	static App *getInstance() { return App::m_instance; }
 
-	void launch( int &argc, char **argv );
+	void launch( int &argc, char **argv, bool useGL=true );
 
 protected: 
 	static App *m_instance;
@@ -58,7 +72,8 @@ protected:
 	// GL buffers
 	GLuint					m_pboGL;
 	cudaGraphicsResource	*m_rcCUDA;
-	
+	bool 					useGL;
+
 	// Pixels buffers
 	int m_width;
 	int m_height;
@@ -92,7 +107,7 @@ protected:
 	dim3 m_dimBlockHisto;	// ie. number of threads / block
 
 	// Initialization
-	void initData( int argc, char **argv );
+	void initData( int argc, char **argv, bool useGL );
 	void initGL();
 	void initGPU();
 	void initDataGPU();
