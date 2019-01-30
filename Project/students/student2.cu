@@ -31,7 +31,8 @@ __global__ void medianFilter(uchar3 *input, float *value, uchar3 *output, int wi
 
     int shift = windowSize / 2;
 
-    float *neighboursValueArray = new float[windowSize * windowSize];
+    // float *neighboursValueArray = new float[windowSize * windowSize];
+    float neighboursValueArray[50] = {0};
     uchar3 *neighboursArray = new uchar3[windowSize * windowSize];
 
     int count = 0;
