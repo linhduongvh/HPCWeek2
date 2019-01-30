@@ -101,8 +101,8 @@ public:
     int y = index / width;
     int shift = size / 2;
 
-    //float3 *neighboursArray = new float3[size * size];
-	float3 neighboursArray[50] = {0};
+    // float3 *neighboursArray = new float3[size * size];
+     float3 neighboursArray[50] = {0};
     
 	int count = 0;
     for (int i = x - shift; i <= x + shift; ++i)
